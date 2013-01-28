@@ -23,7 +23,7 @@ conn = mdb.Connection(db=DB_NAME, host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD
 # Fetch the queued commands in DB
 cursor = conn.cursor()
 updateCur = conn.cursor()
-sql = "SELECT id, command FROM queue_commands WHERE status = 0"
+sql = "SELECT id, command, dead FROM queue_commands WHERE status != 1 AND dead < 3"
 cursor.execute(sql)
 
 if int(cursor.rowcount) == 0:
@@ -36,6 +36,8 @@ for row in cursor:
 	# If command run successful then update the command status in queued_commands table.
 	if returncode == 0:
 		updateCur.execute("UPDATE queue_commands SET status = %s WHERE id = %s",("1", row[0]))
+	else:
+		updateCur.execute("UPDATE queue_commands SET status = %s, dead = %s WHERE id = %s",(returncode, int(row[2]) + 1, row[0]))
 
 cursor.close()
 updateCur.close()
