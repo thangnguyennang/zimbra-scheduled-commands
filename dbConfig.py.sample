@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Database connection parameters
-DB_NAME = 'db_name'
-DB_HOST = 'db_host'
-DB_USER = 'db_user'
-DB_PASSWORD = 'db_password'
+DB_NAME = 'TBD'
+DB_HOST = 'TBD'
+DB_USER = 'TBD'
+DB_PASSWORD = 'TBD'
+
+# Zimbra parameters
+ZIMBRA_USER = 'TBD'
 

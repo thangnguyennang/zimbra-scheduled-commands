@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,25 +15,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
   
 import subprocess
-import MySQLdb
+import MySQLdb as mdb
+from dbConfig import *
 
-# Database connection parameters
-DB_NAME = 'db_name'
-DB_HOST = 'db_host'
-DB_USER = 'db_user'
-DB_PASSWORD = 'db_password'
-
-conn = MySQLdb.Connection(db=DB_NAME, host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD)
+conn = mdb.Connection(db=DB_NAME, host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD)
 
 # Fetch the queued commands in DB
 cursor = conn.cursor()
-sql = """select command from queue_commands where status=0"""
+updateCur = conn.cursor()
+sql = "SELECT id, command FROM queue_commands WHERE status = 0"
 cursor.execute(sql)
 
-# Run each command
+if int(cursor.rowcount) == 0:
+	print "No queued commands to run."
+
+# Run each queued command
 for row in cursor:
-        subprocess.call(["su", "-", "zimbra", "-c", row[0]])
-	# Status should be updated to '1' after the scheduled command runs successfully
+	returncode = subprocess.call(["su", "-", ZIMBRA_USER, "-c", row[1]])
+
+	# If command run successful then update the command status in queued_commands table.
+	if returncode == 0:
+		updateCur.execute("UPDATE queue_commands SET status = %s WHERE id = %s",("1", row[0]))
 
 cursor.close()
+updateCur.close()
 conn.close()
