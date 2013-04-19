@@ -33,11 +33,11 @@ if int(cursor.rowcount) == 0:
 for row in cursor:
 	returncode = subprocess.call(["su", "-", ZIMBRA_USER, "-c", row[1]])
 	# If command run successful then update the command status in queued_commands table.
-	print "Return Code:", returncode
+	
 	if returncode == 0:
-		updateCur.execute("UPDATE zimbra_queuedcommand SET status=%s WHERE cid=%s",("1", "5"))
+		updateCur.execute("UPDATE zimbra_queuedcommand SET status=%s WHERE cid=%s",("1", row[0]))
 	else:
-		updateCur.execute("""UPDATE zimbra_queuedcommand SET status=%s, number_of_deads=%s WHERE cid=%s""", (returncode, int(row[2]) + 1, row[0]))
+		updateCur.execute("UPDATE zimbra_queuedcommand SET status=%s, number_of_deads=%s WHERE cid=%s",(returncode, int(row[2]) + 1, row[0]))
 
 cursor.close()
 updateCur.close()
