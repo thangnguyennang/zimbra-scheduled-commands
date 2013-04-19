@@ -23,7 +23,7 @@ conn = mdb.Connection(db=DB_NAME, host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD
 # Fetch the queued commands in DB
 cursor = conn.cursor()
 updateCur = conn.cursor()
-sql = "SELECT id, command, dead FROM queue_commands WHERE status != 1 AND dead < 3"
+sql = "SELECT cid, command, number_of_deads FROM zimbra_queuedcommand WHERE status != 1 AND number_of_deads < 3"
 cursor.execute(sql)
 
 if int(cursor.rowcount) == 0:
@@ -32,12 +32,12 @@ if int(cursor.rowcount) == 0:
 # Run each queued command
 for row in cursor:
 	returncode = subprocess.call(["su", "-", ZIMBRA_USER, "-c", row[1]])
-
 	# If command run successful then update the command status in queued_commands table.
+	print "Return Code:", returncode
 	if returncode == 0:
-		updateCur.execute("UPDATE queue_commands SET status = %s WHERE id = %s",("1", row[0]))
+		updateCur.execute("UPDATE zimbra_queuedcommand SET status=%s WHERE cid=%s",("1", "5"))
 	else:
-		updateCur.execute("UPDATE queue_commands SET status = %s, dead = %s WHERE id = %s",(returncode, int(row[2]) + 1, row[0]))
+		updateCur.execute("""UPDATE zimbra_queuedcommand SET status=%s, number_of_deads=%s WHERE cid=%s""", (returncode, int(row[2]) + 1, row[0]))
 
 cursor.close()
 updateCur.close()
